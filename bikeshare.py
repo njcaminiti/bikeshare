@@ -1,70 +1,99 @@
 import time
 import re
-import sys
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import urllib
 
-CITY_DATA = { 'chicago': 'data/chicago.csv',
-              'new york city': 'data/new_york_city.csv',
-              'washington': 'data/washington.csv' }
-months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september',\
-          'october', 'november', 'december']
-days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
+ny = plt.imread(urllib.request.urlopen('https://media-cdn.tripadvisor.com/'
+                'media/photo-s/0e/9a/e3/1d/freedom-tower.jpg'), format='jpg')
+
+chi = plt.imread(urllib.request.urlopen('http://www.essexinn.com/d/essexinn/'
+                'media/Attractions/__thumbs_1600_714_crop/ChicagoSkyline'
+                '.jpg.jpg?1427109369'), format='jpg')
+
+dc = plt.imread(urllib.request.urlopen('http://diningoutfree.com/wp-content/'
+                'uploads/2014/06/Washington-DC-City.jpg'), format='jpg')
+
+
+CITY_DATA = {'chicago': ['data/chicago.csv', chi],
+             'new york city': ['data/new_york_city.csv', ny],
+             'washington': ['data/washington.csv', dc]}
+
+months = ['january', 'february', 'march', 'april', 'may', 'june', 'july',
+          'august', 'september', 'october', 'november', 'december']
+
+days = ['monday', 'tuesday', 'wednesday', 'thursday',
+        'friday', 'saturday', 'sunday']
+
+xt = ['q', 'quit', 'exit', 'done', 'end', 'stop', 'bye',
+      'leave', 'no', 'kill', 'over', 'break', 'nope', 'nada', 'none']
+
 def get_filters():
     """
     Asks user to specify a city, month, and day to analyze.
 
     Returns:
         (str) city - name of the city to analyze
-        (str) month - name of the month to filter by, or "all" to apply no month filter
-        (str) day - name of the day of week to filter by, or "all" to apply no day filter
+        (str) month - name of the month to filter by, or "all"
+        (str) day - name of the day of week to filter by, or "all"
     """
     city = None
-    print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHello! Let\'s explore some US bikeshare data!')
+    print('\n\n\n\n\n\n\n\n\n\nHello! Let\'s explore some US bikeshare data!')
     # get user input for city (chicago, new york city, washington).
-    while city not in CITY_DATA.keys():
-        incity = input(\
-        "Are you interested in bikeshare data from Chicago, New York City, or Washington DC?\n" +\
-        '(Type q to quit)\n\n')
+    while (city not in CITY_DATA.keys()) and (city not in xt):
+        incity = input("Are you interested in bikeshare data from Chicago, "
+                       "New York City, or Washington DC?\n" +
+                       '(Type q to quit)\n\n')
         incity = str.lower(incity)
-        if re.match('^chi', incity) or re.match('$windy city',incity):
-            print('To Chicago!')
+        if re.match('^chi', incity) or re.match('$windy city', incity):
             city = 'chicago'
         elif re.match('^new york', incity) or incity == 'nyc':
-            print('To New York City!')
             city = 'new york city'
         elif re.match('^washington', incity) or re.match('d?.c?.$', incity):
-            print("Welcome to our nation's capital!")
             city = 'washington'
-        elif incity in ['q', 'quit', 'exit', 'done', 'end', 'stop', 'bye', 'leave']:
-            print('\n OK! Seeya later!')
-            break
+        elif incity in xt:
+            city = str.lower(incity)
         else:
-            print('\nSorry. Our database only contains data for Chicago, NYC, and DC')
+            print('\nSorry. Our database only covers Chicago, NYC, and DC')
+    if incity in xt:
+        print('\n OK! Seeya later!')
+    else:
+        plt.ion()
+        print('\nWelcome to ' + str.capitalize(city) + '!')
+        time.sleep(1)
+        plt.figure(figsize=(14, 10), frameon=False)
+        plt.rcParams['axes.labelpad'] = 2
+        plt.rcParams['axes.titlepad'] = 3
+        plt.axis('off')
+        plt.imshow(CITY_DATA[city][1], aspect='equal')
+        plt.autoscale(tight=True)
+        plt.show()
+        plt.pause(3)
+        plt.close()
     # get user input for month (all, january, february, ... , june)
-
 
     # get user input for day of week (all, monday, tuesday, ... sunday)
 
+        print('-'*40)
+    return city, 'all', 'all'  # , month, day
 
-    print('-'*40)
-    return city, month, day
 
-
-def load_data(city, month, day):
+def load_data(city, month='all', day='all'):
     """
-    Loads data for the specified city and filters by month and day if applicable.
+    Loads data for the specified city and filters by month and day (optional)
 
     Args:
         (str) city - name of the city to analyze
-        (str) month - name of the month to filter by, or "all" to apply no month filter
-        (str) day - name of the day of week to filter by, or "all" to apply no day filter
-    
+        (str) month - name of the month to filter by, or "all"
+        (str) day - name of the day of week to filter by, or "all"
+
     Returns:
         df - Pandas DataFrame containing city data filtered by month and day
     """
     # load data file into a dataframe
-    df = pd.read_csv(CITY_DATA[city])
+    df = pd.read_csv(CITY_DATA[city][0])
     # convert the Start Time column to datetime
     df['Start Time'] = pd.to_datetime(df['Start Time'])
     # extract month and day of week from Start Time to create new columns
@@ -75,7 +104,7 @@ def load_data(city, month, day):
         # use the index of the months list to get the corresponding int
         month = list(i+1 for i in range(len(months)) if months[i] == month)[0]
         # filter by month to create the new dataframe
-        df = df[df['month'] == month] 
+        df = df[df['month'] == month]
 
     # filter by day of week if applicable
     if day != 'all':
@@ -92,12 +121,9 @@ def time_stats(df):
 
     # display the most common month
 
-
     # display the most common day of week
 
-
     # display the most common start hour
-
 
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-'*40)
@@ -160,17 +186,16 @@ def user_stats(df):
 def main():
     while True:
         city, month, day = get_filters()
-        df = load_data(city, month, day)
-
-        time_stats(df)
-        station_stats(df)
-        trip_duration_stats(df)
-        user_stats(df)
-
+#        df = load_data(city, month, day)
+#
+ #       time_stats(df)
+  #      station_stats(df)
+   #     trip_duration_stats(df)
+    #    user_stats(df)
         restart = input('\nWould you like to restart? Enter yes or no.\n')
         if restart.lower() != 'yes':
             break
 
 
 if __name__ == "__main__":
-	main()
+    main()
