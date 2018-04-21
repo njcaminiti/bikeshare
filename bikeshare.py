@@ -16,10 +16,9 @@ chi = plt.imread(urllib.request.urlopen('http://www.essexinn.com/d/essexinn/'
 dc = plt.imread(urllib.request.urlopen('http://diningoutfree.com/wp-content/'
                 'uploads/2014/06/Washington-DC-City.jpg'), format='jpg')
 
-
-CITY_DATA = {'chicago': ['data/chicago.csv', chi],
-             'new york city': ['data/new_york_city.csv', ny],
-             'washington': ['data/washington.csv', dc]}
+CITY_DATA = {'chicago': ['data/chicago.csv', chi, 2577936],
+             'new york city': ['data/new_york_city.csv', ny, 2641886],
+             'washington': ['data/washington.csv', dc, 2100005]}
 
 months = ['january', 'february', 'march', 'april', 'may', 'june', 'july',
           'august', 'september', 'october', 'november', 'december']
@@ -29,6 +28,7 @@ days = ['monday', 'tuesday', 'wednesday', 'thursday',
 
 xt = ['q', 'quit', 'exit', 'done', 'end', 'stop', 'bye',
       'leave', 'no', 'kill', 'over', 'break', 'nope', 'nada', 'none']
+
 
 def get_filters():
     """
@@ -40,21 +40,22 @@ def get_filters():
         (str) day - name of the day of week to filter by, or "all"
     """
     city = None
-    print('\n\n\n\n\n\n\n\n\n\nHello! Let\'s explore some US bikeshare data!')
+    print('\n\n\n\n\n\nHello! Let\'s explore some US bikeshare data!')
+
     # get user input for city (chicago, new york city, washington).
     while (city not in CITY_DATA.keys()) and (city not in xt):
         incity = input("Are you interested in bikeshare data from Chicago, "
                        "New York City, or Washington DC?\n" +
                        '(Type q to quit)\n\n')
         incity = str.lower(incity)
-        if re.match('^chi', incity) or re.match('$windy city', incity):
+        if re.match('^chi', incity) or re.match('^windy', incity):
             city = 'chicago'
         elif re.match('^new york', incity) or incity == 'nyc':
             city = 'new york city'
         elif re.match('^washington', incity) or re.match('d?.c?.$', incity):
             city = 'washington'
         elif incity in xt:
-            city = str.lower(incity)
+            city = incity
         else:
             print('\nSorry. Our database only covers Chicago, NYC, and DC')
     if incity in xt:
@@ -72,7 +73,19 @@ def get_filters():
         plt.show()
         plt.pause(3)
         plt.close()
+
     # get user input for month (all, january, february, ... , june)
+    print("\nWe have access to bikeshare data from " + str.capitalize(city) +
+          ' for January through June of 2017. \n\n')
+    time.sleep(1)
+    print("Over the course of those six months, city residents took " +
+          str(CITYDATA[city][2]) + " rides on bikeshare bicycles.\n\n")
+    time.sleep(1)
+    print("Let's take a look at what kind of information the program tracked.")
+    time.sleep(.5)
+    print("\nWould you like to take a look at all the data or would you rather"
+          " limit your view to a single month's rides?\n")
+    input("(press ))
 
     # get user input for day of week (all, monday, tuesday, ... sunday)
 
