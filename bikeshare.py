@@ -76,20 +76,31 @@ def get_filters():
 
     # get user input for month (all, january, february, ... , june)
     print("\nWe have access to bikeshare data from " + str.capitalize(city) +
-          ' for January through June of 2017. \n\n')
-    time.sleep(1)
+          ' for January through June of 2017.')
+    time.sleep(2)
     print("Over the course of those six months, city residents took " +
-          str(CITYDATA[city][2]) + " rides on bikeshare bicycles.\n\n")
+          str(CITY_DATA[city][2]) + " rides on bikeshare bicycles.\n")
+    time.sleep(2)
+    print("Every one of those rides was logged in detail as part of the "
+          "program's data collection efforts so that analysts could use the "
+          "information to guide future decisions about bikesharing\n")
+    time.sleep(2)
+    if city != 'washington':
+        print("For each trip, the program tracked start and end times, "
+              "duration, start and end station (location), user type (service "
+              "subscriber or single-use customer, and rider age and gender.\n")
+    else:
+        print("For each trip, the program tracked start and end times, "
+              "duration, start and end station (location), and user type "
+              "(service subscriber or single-use customer.\n")
     time.sleep(1)
-    print("Let's take a look at what kind of information the program tracked.")
-    time.sleep(.5)
-    print("\nWould you like to take a look at all the data or would you rather"
-          " limit your view to a single month's rides?\n")
-    input("(press ))
+    print("Would you like to take a look at all the data or would you rather"
+          " limit your view to a single month's rides?")
+#    input("(press ))
 
     # get user input for day of week (all, monday, tuesday, ... sunday)
 
-        print('-'*40)
+    print('-'*40)
     return city, 'all', 'all'  # , month, day
 
 
@@ -199,12 +210,12 @@ def user_stats(df):
 def main():
     while True:
         city, month, day = get_filters()
-#        df = load_data(city, month, day)
+#       df = load_data(city, month, day)
 #
- #       time_stats(df)
-  #      station_stats(df)
-   #     trip_duration_stats(df)
-    #    user_stats(df)
+#       time_stats(df)
+#       station_stats(df)
+#       trip_duration_stats(df)
+#       user_stats(df)
         restart = input('\nWould you like to restart? Enter yes or no.\n')
         if restart.lower() != 'yes':
             break
