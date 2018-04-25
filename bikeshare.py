@@ -1,7 +1,6 @@
 import time
 import re
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import urllib
 
@@ -24,21 +23,19 @@ xt = ['q', 'quit', 'exit', 'done', 'end', 'stop', 'bye', 'x', 'xt', 'die',
       'leave', 'no', 'kill', 'over', 'break', 'nope', 'nada', 'none']
 q = False
 rep = False
+city = None
+month = 'all'
+day = 'all'
 
 
-def get_filters():
+def get_city():
     """
-    Asks user to specify a city, month, and day to analyze.
-
-    Returns:
-        (str) city - name of the city to analyze
-        (str) month - name of the month to filter by, or "all"
-        (str) day - name of the day of week to filter by, or "all"
+    Asks user to specify a city to analyze.
+    Returns: (str) city - name of the city to analyze
+    Displays: intro stats + welcome image
     """
     global q
-    city = None
-    month = 'all'
-    day = 'all'
+    global city
     print('\n\n\n\n\n\nHello! Let\'s explore some US bikeshare data!')
 
     # get user input for city (chicago, new york city, washington).
@@ -94,8 +91,12 @@ def get_filters():
         time.sleep(4)
         print("If you'd like, you can choose to look at ride data from a "
               "single month only and/or a specific day of the week.")
+    return city
 
+
+def get_filters():
     # Choose filter(s)
+    global q
     selection = None
     while (q is not True) and (month not in months) and (day not in days):
         time.sleep(2)
@@ -109,49 +110,65 @@ def get_filters():
         elif selection == 'a':
             break
         if selection in ['m', 'b']:
-            while month not in months[:6]:
-                time.sleep(1)
-                month = input("Choose a month from January through June.\n")
-                month = str.lower(month)
-                if month in xt:
-                    q = True
-                    return None, None, None
-                elif month[0:3] in [m[0:3] for m in months] or month.isdigit():
-                    for i, m in enumerate(months):
-                        if (month[0:3] == m[0:3]) or (month == str(i+1)):
-                            if 0 <= i <= 5:
-                                month = m
-                                break
-                            elif i > 5:
-                                print("We only have data for January through "
-                                      "June")
-                else:
-                    print("That isn't a valid month")
-            print("You chose " + month.capitalize())
-            time.sleep(1)
+            get_month()
+            if selection == 'm':
+                break
         if selection in ['d', 'b']:
-            while day not in days:
-                time.sleep(1)
-                day = input("Choose a day of the week. i.e. Sunday, Monday, "
-                            "etc.\n")
-                day = str.lower(day)
-                if day in xt:
-                    q = True
-                    return None, None, None
-                elif day[0:3] in [d[0:3] for d in days]:
-                    day = [i for i in days if day[0:3] == i[0:3]][0]
-                    break
-                print("That is not a valid day of the week.")
-            print("You chose " + day.capitalize())
-            time.sleep(1)
+            get_day()
+            break
         else:
             print("That is not a valid selection.\n")
             time.sleep(1)
             print("Please choose from the following or press q to quit")
             continue
+    print("\nFetching the data you specified.")
+    time.sleep(4)
     print('-'*40)
-    print(city, month, day)
     return city, month, day
+
+
+def get_month():
+    global month
+    global q
+    while month not in months[:6]:
+        time.sleep(1)
+        month = input("Choose a month from January through June.\n")
+        month = str.lower(month)
+        if month in xt:
+            q = True
+            return None, None, None
+        elif month[0:3] in [m[0:3] for m in months] or month.isdigit():
+            for i, m in enumerate(months):
+                if (month[0:3] == m[0:3]) or (month == str(i+1)):
+                    if 0 <= i <= 5:
+                        month = m
+                        break
+                    elif i > 5:
+                        print("We only have data for January through "
+                              "June")
+        else:
+            print("That isn't a valid month")
+    print("You chose " + month.capitalize())
+    time.sleep(1)
+
+
+def get_day():
+    global day
+    global q
+    while day not in days:
+        time.sleep(1)
+        day = input("Choose a day of the week. i.e. Sunday, Monday, "
+                    "etc.\n")
+        day = str.lower(day)
+        if day in xt:
+            q = True
+            return None, None, None
+        elif day[0:3] in [d[0:3] for d in days]:
+            day = [i for i in days if day[0:3] == i[0:3]][0]
+            break
+        print("That is not a valid day of the week.")
+    print("You chose " + day.capitalize())
+    time.sleep(1)
 
 
 def load_data(city, month='all', day='all'):
@@ -184,6 +201,7 @@ def load_data(city, month='all', day='all'):
     if day != 'all':
         # filter by day of week to create the new dataframe
         df = df[df['day_of_week'] == day.title()]
+    print(df.head())
     return df
 
 
@@ -259,11 +277,13 @@ def user_stats(df):
 
 def main():
     while True:
+        global city, month, day, rep
+        get_city()
         city, month, day = get_filters()
         if q:
             print("Bye!")
             break
-#       df = load_data(city, month, day)
+        df = load_data(city, month, day)
         if q:
             print("Bye!")
             break
@@ -275,8 +295,11 @@ def main():
         if restart.lower() not in ['yes', 'y']:
             print("Bye!")
             break
-        global rep
+        city = None
+        month = 'all'
+        day = 'all'
         rep = True
+
 
 if __name__ == "__main__":
     main()
