@@ -25,6 +25,7 @@ q = False
 rep = False
 city = None
 month = 'all'
+mi = None
 day = 'all'
 
 
@@ -32,7 +33,7 @@ def get_city():
     """
     Asks user to specify a city to analyze.
     Returns: (str) city - name of the city to analyze
-    Displays: intro stats + welcome image
+    Displays: intro + welcome image
     """
     global q
     global city
@@ -59,7 +60,7 @@ def get_city():
     else:
         plt.ion()
         print('\nWelcome to ' + str.capitalize(city) + '!')
-        time.sleep(1)
+#        time.sleep(1)
         plt.figure(figsize=(14, 10), frameon=False)
         plt.rcParams['axes.labelpad'] = 2
         plt.rcParams['axes.titlepad'] = 3
@@ -67,19 +68,19 @@ def get_city():
         plt.imshow(CITY_DATA[city][1], aspect='equal')
         plt.autoscale(tight=True)
         plt.show()
-        plt.pause(3)
+#       plt.pause(3)
         plt.close()
 
     print("\nWe have access to bikeshare data from " + str.capitalize(city) +
           ' for January through June of 2017.')
-    time.sleep(3)
+#    time.sleep(3)
     print("Over the course of those six months, city residents took " +
           str(CITY_DATA[city][2]) + " rides on bikeshare bicycles.\n")
     if not rep:
-        time.sleep(3)
+#        time.sleep(3)
         print("Every one of those rides was logged in detail as part of the "
               "program's data collection efforts.\n")
-        time.sleep(3)
+#        time.sleep(3)
         if city != 'washington':
             print("For each trip, the program tracked start and end times, "
                   "duration, start and end station (location), users' status "
@@ -88,14 +89,14 @@ def get_city():
             print("For each trip, the program tracked start and end times, "
                   "duration, start and end station (location), and user type "
                   "(service subscriber or single-use customer).\n")
-        time.sleep(4)
+#        time.sleep(4)
         print("If you'd like, you can choose to look at ride data from a "
               "single month only and/or a specific day of the week.")
     return city
 
 
 def get_filters():
-    # Choose filter(s)
+    # Choose filter(s) or no filter
     global q
     selection = None
     while (q is not True) and (month not in months) and (day not in days):
@@ -122,13 +123,14 @@ def get_filters():
             print("Please choose from the following or press q to quit")
             continue
     print("\nFetching the data you specified.")
-    time.sleep(4)
     print('-'*40)
-    return city, month, day
+    time.sleep(4)
+    return month, mi, day
 
 
 def get_month():
     global month
+    global mi
     global q
     while month not in months[:6]:
         time.sleep(1)
@@ -142,6 +144,7 @@ def get_month():
                 if (month[0:3] == m[0:3]) or (month == str(i+1)):
                     if 0 <= i <= 5:
                         month = m
+                        mi = i + 1
                         break
                     elif i > 5:
                         print("We only have data for January through "
@@ -164,22 +167,22 @@ def get_day():
             q = True
             return None, None, None
         elif day[0:3] in [d[0:3] for d in days]:
-            day = [i for i in days if day[0:3] == i[0:3]][0]
+            day = [d for i, d in enumerate(days) if day[0:3] == d[0:3]][0]
             break
         print("That is not a valid day of the week.")
     print("You chose " + day.capitalize())
     time.sleep(1)
 
 
-def load_data(city, month='all', day='all'):
+def load_data(city, month='all', mi=None, day='all'):
     """
-    Loads data for the specified city and filters by month and day (optional)
+    Loads data for the specified city and filters by month and/or day(optional)
 
     Args:
         (str) city - name of the city to analyze
         (str) month - name of the month to filter by, or "all"
+        (int) mi - index of filter month or None
         (str) day - name of the day of week to filter by, or "all"
-
     Returns:
         df - Pandas DataFrame containing city data filtered by month and day
     """
@@ -190,16 +193,12 @@ def load_data(city, month='all', day='all'):
     # extract month and day of week from Start Time to create new columns
     df['month'] = df['Start Time'].dt.month
     df['day_of_week'] = df['Start Time'].dt.weekday_name
+    dfull = df.copy()
     # filter by month if applicable
     if month != 'all':
-        # use the index of the months list to get the corresponding int
-        month = list(i+1 for i in range(len(months)) if months[i] == month)[0]
-        # filter by month to create the new dataframe
-        df = df[df['month'] == month]
-
+        df = df[df['month'] == mi]
     # filter by day of week if applicable
     if day != 'all':
-        # filter by day of week to create the new dataframe
         df = df[df['day_of_week'] == day.title()]
     print(df.head())
     return df
@@ -209,10 +208,17 @@ def time_stats(df):
     """Displays statistics on the most frequent times of travel."""
 
     print('\nCalculating The Most Frequent Times of Travel...\n')
+    time.sleep(1)
+    print('\nReady....')
+    time.sleep(2)
+    print('\n\nGO!\n\n')
     start_time = time.time()
 
     # display the most common month
-
+    if month != 'all':
+        print("User chose " + month.capitalize() + ". To find out which month "
+              "saw the most bikeshare activity in " + city + ", run me again "
+              "without a a month or day filter!\n\n")
     # display the most common day of week
 
     # display the most common start hour
@@ -278,19 +284,19 @@ def user_stats(df):
 def main():
     while True:
         global city, month, day, rep
-        get_city()
-        city, month, day = get_filters()
+        city = get_city()
+        month, mi, day = get_filters()
         if q:
             print("Bye!")
             break
-        df = load_data(city, month, day)
+        df = load_data(city, month, mi, day)
         if q:
             print("Bye!")
             break
-#       time_stats(df)
-#       station_stats(df)
-#       trip_duration_stats(df)
-#       user_stats(df)
+        time_stats(df)
+        station_stats(df)
+        trip_duration_stats(df)
+        user_stats(df)
         restart = input('\nWould you like to restart? Enter yes or no.\n')
         if restart.lower() not in ['yes', 'y']:
             print("Bye!")
