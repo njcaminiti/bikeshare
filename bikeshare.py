@@ -25,6 +25,7 @@ xt = ['q', 'quit', 'exit', 'done', 'end', 'stop', 'bye', 'x', 'xt', 'die',
 q = False
 rep = False
 
+
 def get_filters():
     """
     Asks user to specify a city, month, and day to analyze.
@@ -36,8 +37,8 @@ def get_filters():
     """
     global q
     city = None
-    month = None
-    day = None
+    month = 'all'
+    day = 'all'
     print('\n\n\n\n\n\nHello! Let\'s explore some US bikeshare data!')
 
     # get user input for city (chicago, new york city, washington).
@@ -48,7 +49,7 @@ def get_filters():
         incity = str.lower(incity)
         if re.match('chi', incity) or re.match('windy', incity):
             city = 'chicago'
-        elif re.match('new york', incity) or incity == 'nyc':
+        elif re.match('new york', incity) or incity in ['nyc', 'ny']:
             city = 'new york city'
         elif re.match('washington', incity) or re.match('d?.c?.$', incity):
             city = 'washington'
@@ -61,7 +62,7 @@ def get_filters():
     else:
         plt.ion()
         print('\nWelcome to ' + str.capitalize(city) + '!')
-#        time.sleep(1)
+        time.sleep(1)
         plt.figure(figsize=(14, 10), frameon=False)
         plt.rcParams['axes.labelpad'] = 2
         plt.rcParams['axes.titlepad'] = 3
@@ -69,40 +70,38 @@ def get_filters():
         plt.imshow(CITY_DATA[city][1], aspect='equal')
         plt.autoscale(tight=True)
         plt.show()
-#        plt.pause(3)
+        plt.pause(3)
         plt.close()
 
     print("\nWe have access to bikeshare data from " + str.capitalize(city) +
           ' for January through June of 2017.')
-#    time.sleep(3)
+    time.sleep(3)
     print("Over the course of those six months, city residents took " +
           str(CITY_DATA[city][2]) + " rides on bikeshare bicycles.\n")
-#    time.sleep(3)
     if not rep:
+        time.sleep(3)
         print("Every one of those rides was logged in detail as part of the "
               "program's data collection efforts.\n")
         time.sleep(3)
-    if city != 'washington':
-        print("For each trip, the program tracked start and end times, "
-              "duration, start and end station (location), plus users' status "
-              "(subscription or single-ride customer), age, and gender.\n")
-    else:
-        print("For each trip, the program tracked start and end times, "
-              "duration, start and end station (location), and user type "
-              "(service subscriber or single-use customer.\n")
-    time.sleep(4)
-    if not rep:
+        if city != 'washington':
+            print("For each trip, the program tracked start and end times, "
+                  "duration, start and end station (location), users' status "
+                  "(subscription or single-ride customer), age, and gender.\n")
+        else:
+            print("For each trip, the program tracked start and end times, "
+                  "duration, start and end station (location), and user type "
+                  "(service subscriber or single-use customer).\n")
+        time.sleep(4)
         print("If you'd like, you can choose to look at ride data from a "
               "single month only and/or a specific day of the week.")
-        time.sleep(2)
 
     # Choose filter(s)
     selection = None
     while (q is not True) and (month not in months) and (day not in days):
-        if not selection:
-            selection = input("Would you like to filter by (M)onth, (D)ay of "
-                              "week, (B)oth month AND day of week, or return "
-                              "(A)ll results?\n(type q to quit)\n\n")
+        time.sleep(2)
+        selection = input("Would you like to filter by (M)onth, (D)ay of "
+                          "week, (B)oth month AND day of week, or return "
+                          "(A)ll results?\n(type q to quit)\n\n")
         selection = str.lower(selection)
         if selection in xt:
             q = True
@@ -117,7 +116,7 @@ def get_filters():
                 if month in xt:
                     q = True
                     return None, None, None
-                elif (month in months) or (month.isdigit()):
+                elif month[0:3] in [m[0:3] for m in months] or month.isdigit():
                     for i, m in enumerate(months):
                         if (month[0:3] == m[0:3]) or (month == str(i+1)):
                             if 0 <= i <= 5:
@@ -128,7 +127,8 @@ def get_filters():
                                       "June")
                 else:
                     print("That isn't a valid month")
-            print("You chose " + month)
+            print("You chose " + month.capitalize())
+            time.sleep(1)
         if selection in ['d', 'b']:
             while day not in days:
                 time.sleep(1)
@@ -139,12 +139,16 @@ def get_filters():
                     q = True
                     return None, None, None
                 elif day[0:3] in [d[0:3] for d in days]:
-                    day = days[day[0:3] == days[:][0:3]]
+                    day = [i for i in days if day[0:3] == i[0:3]][0]
                     break
                 print("That is not a valid day of the week.")
-            print("You chose " + day)
+            print("You chose " + day.capitalize())
+            time.sleep(1)
         else:
+            print("That is not a valid selection.\n")
+            time.sleep(1)
             print("Please choose from the following or press q to quit")
+            continue
     print('-'*40)
     print(city, month, day)
     return city, month, day
@@ -257,9 +261,11 @@ def main():
     while True:
         city, month, day = get_filters()
         if q:
+            print("Bye!")
             break
 #       df = load_data(city, month, day)
         if q:
+            print("Bye!")
             break
 #       time_stats(df)
 #       station_stats(df)
@@ -267,6 +273,7 @@ def main():
 #       user_stats(df)
         restart = input('\nWould you like to restart? Enter yes or no.\n')
         if restart.lower() not in ['yes', 'y']:
+            print("Bye!")
             break
         global rep
         rep = True
