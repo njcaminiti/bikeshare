@@ -99,7 +99,7 @@ def get_filters():
     # Choose filter(s) or no filter
     global q
     selection = None
-    while (q is not True) and (month not in months) and (day not in days):
+    while (not q) and (month not in months) and (day not in days):
         time.sleep(2)
         selection = input("Would you like to filter by (M)onth, (D)ay of "
                           "week, (B)oth month AND day of week, or return "
@@ -112,9 +112,11 @@ def get_filters():
             break
         if selection in ['m', 'b']:
             get_month()
-            if selection == 'm':
+            if (selection == 'm') or q:
                 break
         if selection in ['d', 'b']:
+            if q:
+                break
             get_day()
             break
         else:
@@ -122,9 +124,9 @@ def get_filters():
             time.sleep(1)
             print("Please choose from the following or press q to quit")
             continue
-    print("\nFetching the data you specified.")
+        print("\nFetching the data you specified.")
     print('-'*40)
-    time.sleep(4)
+#    time.sleep(4)
     return month, mi, day
 
 
@@ -200,34 +202,44 @@ def load_data(city, month='all', mi=None, day='all'):
     # filter by day of week if applicable
     if day != 'all':
         df = df[df['day_of_week'] == day.title()]
-    print(df.head())
-    return df
+    return df, dfull
 
 
-def time_stats(df):
-    """Displays statistics on the most frequent times of travel."""
-
+def time_stats(df, dfull):
+    # Displays statistics on the most frequent times of travel.
     print('\nCalculating The Most Frequent Times of Travel...\n')
     time.sleep(1)
     print('\nReady....')
-    time.sleep(2)
+#    time.sleep(2)
     print('\n\nGO!\n\n')
     start_time = time.time()
 
     # display the most common month
-    if month != 'all':
-        print("User chose " + month.capitalize() + ". To find out which month "
-              "saw the most bikeshare activity in " + city + ", run me again "
-              "without a a month or day filter!\n\n")
+    print("The most common month is: " +
+          months[dfull['month'].mode()[0] - 1].title())
     # display the most common day of week
-
+    print("The most common day is: " + dfull['day_of_week'].mode()[0])
     # display the most common start hour
-
+    print("The most common hour is: " +
+          str(dfull['Start Time'].dt.hour.mode()[0]))
+    if month != 'all':
+        dfmonth = dfull[dfull['month'] == mi]
+        print("The most common day in " + month.title() + " is: " +
+              str(dfmonth['day_of_week'].mode()[0]))
+        print("The most common hour in " + month + " is: " +
+              str(dfmonth['Start Time'].dt.hour.mode()[0]))
+    if day != 'all':
+        dfday = dfull[dfull['day_of_week'] == day.capitalize()]
+        print("the most common hour on " + day + " is: " +
+              str(dfday['Start Time'].dt.hour.mode()[0]))
+        if month != 'all':
+            print("The most common hour on " + day + " during the month of " +
+                  month + " is: " + str(df['Start Time'].dt.hour.mode()[0]))
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-'*40)
 
 
-def station_stats(df):
+def station_stats(df, dfull):
     """Displays statistics on the most popular stations and trip."""
 
     print('\nCalculating The Most Popular Stations and Trip...\n')
@@ -246,7 +258,7 @@ def station_stats(df):
     print('-'*40)
 
 
-def trip_duration_stats(df):
+def trip_duration_stats(df, dfull):
     """Displays statistics on the total and average trip duration."""
 
     print('\nCalculating Trip Duration...\n')
@@ -262,7 +274,7 @@ def trip_duration_stats(df):
     print('-'*40)
 
 
-def user_stats(df):
+def user_stats(df, dfull):
     """Displays statistics on bikeshare users."""
 
     print('\nCalculating User Stats...\n')
@@ -289,14 +301,14 @@ def main():
         if q:
             print("Bye!")
             break
-        df = load_data(city, month, mi, day)
+        df, dfull = load_data(city, month, mi, day)
         if q:
             print("Bye!")
             break
-        time_stats(df)
-        station_stats(df)
-        trip_duration_stats(df)
-        user_stats(df)
+        time_stats(df, dfull)
+        station_stats(df, dfull)
+        trip_duration_stats(df, dfull)
+        user_stats(df, dfull)
         restart = input('\nWould you like to restart? Enter yes or no.\n')
         if restart.lower() not in ['yes', 'y']:
             print("Bye!")
