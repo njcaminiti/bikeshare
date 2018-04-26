@@ -300,6 +300,9 @@ def user_stats(df, dfull):
     print('-'*40)
 
 
+def present_stats(time, station, trip, user):
+    
+
 def main():
     while True:
         global city, month, day, rep
@@ -312,10 +315,11 @@ def main():
         if q:
             print("Bye!")
             break
-        time_stats(df, dfull)
-        station_stats(df, dfull)
-        trip_duration_stats(df, dfull)
-        user_stats(df, dfull)
+        time = time_stats(df, dfull)
+        station = station_stats(df, dfull)
+        trip = trip_duration_stats(df, dfull)
+        user = user_stats(df, dfull)
+        present_stats(time, station, trip, user)
         restart = input('\nWould you like to restart? Enter yes or no.\n')
         if restart.lower() not in ['yes', 'y']:
             print("Bye!")
