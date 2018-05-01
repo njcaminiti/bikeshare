@@ -6,4 +6,7 @@ half of 2017.
 
 After choosing a city, the user will be provided options to explore data from 
 that city's bikeshare program, including customer information, trip statistics,
-usage volume by time of day, and detailed information on individual stations.   
+usage volume by time of day, and detailed information on individual stations.
+
+__please note, this was built to spec. I did not choose features, functionality
+or format.__   
