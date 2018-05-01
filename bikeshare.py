@@ -38,7 +38,7 @@ def get_city():
         Displays: intro + welcome image """
     global city
     global q
-    
+
     print('\n\n\n\n\n\nHello! Let\'s explore some US bikeshare data!')
     # get user input for city (chicago, new york city, washington).
     while (city not in CITY_DATA.keys()) and (q is not True):
@@ -61,7 +61,7 @@ def get_city():
     else:
         plt.ion()
         print('\nWelcome to ' + str.capitalize(city) + '!')
-#        time.sleep(1)
+        time.sleep(1)
         plt.figure(figsize=(14, 10), frameon=False)
         plt.rcParams['axes.labelpad'] = 2
         plt.rcParams['axes.titlepad'] = 3
@@ -69,11 +69,11 @@ def get_city():
         plt.imshow(CITY_DATA[city][1], aspect='equal')
         plt.autoscale(tight=True)
         plt.show()
-#       plt.pause(3)
+        plt.pause(3)
         plt.close()
     print("\nWe have access to bikeshare data from " + str.capitalize(city) +
           ' for January through June of 2017.')
-#    time.sleep(3)
+    time.sleep(3)
     if not rep:
         if city != 'washington':
             print("For each trip, the program tracked start and end times, "
@@ -83,7 +83,7 @@ def get_city():
             print("For each trip, the program tracked start and end times, "
                   "duration, start and end station (location), and user type "
                   "(service subscriber or single-use customer).\n")
-#        time.sleep(4)
+        time.sleep(4)
         print("If you'd like, you can choose to look at ride data from a "
               "single month only and/or a specific day of the week.")
     return city
@@ -121,7 +121,7 @@ def get_filters():
             continue
         print("\nFetching the data you specified.")
     print('-'*40)
-#    time.sleep(4)
+    time.sleep(4)
     return month, mi, day
 
 
@@ -197,7 +197,7 @@ def load_data(city, month='all', mi=None, day='all'):
 
 
 def get_stats(df):
-    count = ''
+    stats = {}
     print('\nOk great!\n\n')
     time.sleep(2)
     print("Now I'll calculate the most frequent times of travel, most active "
@@ -210,28 +210,37 @@ def get_stats(df):
     start_time = time.time()
     print('-'*40)
     if day == 'all':
-        top_day = df['day_of_week'].mode()[0]
+        stats['top_day'] = df['day_of_week'].mode()[0]
         if month == 'all':
-            top_month = months[df['month'].mode()[0] - 1].title()
-    top_hour = df['Start Time'].dt.hour.mode()[0]
-    top_start_station = df['Start Station'].mode()[0]
-    top_end_station = df['End Station'].mode()[0]
-    top_route = ''
-    total_time = df['Trip Duration'].sum()
-    avg_time = df['Trip Duration'].mean()
-    type_count = df.groupby(['User Type']).count()['Start Time']
+            stats['top_month'] = months[df['month'].mode()[0] - 1].title()
+    stats['top_hour'] = df['Start Time'].dt.hour.mode()[0]
+    stats['top_start_station'] = df['Start Station'].mode()[0]
+    stats['top_end_station'] = df['End Station'].mode()[0]
+    stats['top_route'] = df.groupby(['Start Station', 'End Station'])\
+        ['Start Time'].count().idxmax()
+    stats['total_time'] = df['Trip Duration'].sum()
+    stats['avg_time'] = df['Trip Duration'].mean()
+    stats['type_count'] = df.groupby(['User Type']).count()['Start Time']
+    stats['customer'] = stats['type_count']['Customer']
+    stats['subscriber'] = stats['type_count']['Subscriber']
     if city != "washington":
-        gender_count = df.groupby(['Gender']).size()
-        youngest = df['Birth Year'].min()
-        oldest = df['Birth Year'].max()
-        avg_age = df['Birth Year'].mode()
-    print("Calculations took " + str(time.time() - start_time)[:7] + " seconds.\n")
+        stats['gender_count'] = df.groupby(['Gender']).size()
+        stats['female'] = stats['gender_count']['Female']
+        stats['male'] = stats['gender_count']['Male']
+        stats['youngest'] = df['Birth Year'].max()
+        stats['oldest'] = df['Birth Year'].min()
+        stats['avg_age'] = df['Birth Year'].mode()[0]
+    print("Calculations took " + str(time.time() - start_time)[:7] +
+          " seconds.\n")
     time.sleep(2)
     print("I am SO sorry for keeping you waiting.\n\n")
     time.sleep(3)
-
-def present_stats(stats):
-    print("present stats")
+    stats = pd.DataFrame.from_dict(stats, orient='index')
+    stats = stats.drop(['type_count', 'gender_count'], errors='ignore')
+    if city != "washington":
+        stats.loc[['youngest', 'oldest', 'avg_age']] = stats.loc[[
+                'youngest', 'oldest', 'avg_age']].sub(2017).apply(abs)
+    print(stats)
 
 
 def main():
@@ -246,8 +255,7 @@ def main():
         if q:
             print("Bye!")
             break
-        stats = get_stats(df)
-        present_stats(stats)
+        get_stats(df)
         restart = input('\nWould you like to restart? Enter yes or no.\n')
         if restart.lower() not in ['yes', 'y']:
             print("Bye!")
