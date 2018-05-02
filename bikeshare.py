@@ -1,8 +1,15 @@
+import os
+import re
+import matplotlib as mpl
+if not re.search('windows', str.lower(os.environ.get('OS'))):
+    print('Script running on non-windows OS. Using non-interactive Agg '
+          'backend. Images may not be displayed.')
+    mpl.use('Agg')
+import urllib
 import time
 import re
 import pandas as pd
 import matplotlib.pyplot as plt
-import urllib
 
 
 ny = plt.imread(urllib.request.urlopen('https://media-cdn.tripadvisor.com/'
@@ -73,7 +80,7 @@ def get_city():
         plt.close()
     print("\nWe have access to bikeshare data from " + str.capitalize(city) +
           ' for January through June of 2017.')
-    time.sleep(3)
+    time.sleep(2)
     if not rep:
         if city != 'washington':
             print("For each trip, the program tracked start and end times, "
@@ -83,7 +90,7 @@ def get_city():
             print("For each trip, the program tracked start and end times, "
                   "duration, start and end station (location), and user type "
                   "(service subscriber or single-use customer).\n")
-        time.sleep(4)
+        time.sleep(2)
         print("If you'd like, you can choose to look at ride data from a "
               "single month only and/or a specific day of the week.")
     return city
@@ -121,7 +128,7 @@ def get_filters():
             continue
         print("\nFetching the data you specified.")
     print('-'*40)
-    time.sleep(4)
+    time.sleep(2)
     return month, mi, day
 
 
@@ -232,9 +239,9 @@ def get_stats(df):
         stats['avg_age'] = df['Birth Year'].mode()[0]
     print("Calculations took " + str(time.time() - start_time)[:7] +
           " seconds.\n")
-    time.sleep(2)
+    time.sleep(1)
     print("I am SO sorry for keeping you waiting.\n\n")
-    time.sleep(3)
+    time.sleep(2)
     stats = pd.DataFrame.from_dict(stats, orient='index')
     stats = stats.drop(['type_count', 'gender_count'], errors='ignore')
     if city != "washington":
